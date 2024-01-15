@@ -1,0 +1,36 @@
+pipeline {
+    agent any
+
+    environment {
+        AWS_DEFAULT_REGION = 'ap-south-1'
+        AWS_ACCESS_KEY_ID = 'AKIA3FMBKG376H6P6X7Y'
+        AWS_SECRET_ACCESS_KEY = '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'
+        INSTANCE_COUNT = 5
+        INSTANCE_TYPE = 't2.micro'  
+        AMI_ID = 'ami-03f8de81478e41591'      
+        KEY_NAME = 'mumbai'  
+        SECURITY_GROUP_ID = 'sg-0a7328b3a79b6df2f'  
+    }
+
+    stages {
+        stage('Create EC2 Instances') {
+            steps {
+                script {
+                    for (int i = 1; i <= Integer.parseInt(env.INSTANCE_COUNT); i++) {
+                        def instanceName = "instance-${i}"
+
+                        sh """
+                            aws ec2 run-instances 
+                                --image-id ${env.AMI_ID} 
+                                --instance-type ${env.INSTANCE_TYPE} 
+                                --key-name ${env.KEY_NAME} 
+                                --security-group-ids ${env.SECURITY_GROUP_ID} 
+                                --count 1 
+                                --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=${demo}}]"
+                        """
+                    }
+                }
+            }
+        }
+    }
+}
